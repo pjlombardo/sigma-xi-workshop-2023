@@ -135,4 +135,5 @@ gapminder %>%
 
 # Case Study 4: Non-tidy data
 Coming soon...
+Any thoughts?
 
