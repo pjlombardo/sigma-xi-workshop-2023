@@ -109,7 +109,7 @@ p0+p1+p2 +plot_layout(design=layout)
 # Case Study 3: Summarizing and plotting
 Time series with other criteria, look at averages by timestamp
 Gapminder, look at time trends grouping by continent
-```{r}
+```{r, warning=FALSE, message=FALSE}
 gapminder %>%
     group_by(continent,year) %>%
     summarise(meanPop = mean(pop),
@@ -123,13 +123,18 @@ gapminder %>%
                color=continent,
                group=continent))+
     geom_point(aes(size = meanPop))+geom_line()+
+    # could make the size of the points sdLife.
     scale_color_brewer("Species\nof Iris",palette="Set2")+
-    geom_errorbar(aes(ymin=lowLife,ymax=highLife),
-                  alpha=.3,width=1)+
+    # geom_errorbar(aes(ymin=lowLife,ymax=highLife),
+    #               alpha=.3,width=1)+
+    # or use ribbons to show variation
+    geom_ribbon(aes(ymin=lowLife,ymax=highLife,fill=continent),
+                alpha=.1)+
     scale_x_continuous(breaks=seq(1950,2010,by=5))+
     geom_hline(yintercept=seq(40,80,by=10),
                col='gray',alpha=.3)+
     theme_classic()
+?geom_ribbon
 ```
 
 
