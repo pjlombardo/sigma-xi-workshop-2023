@@ -1,0 +1,138 @@
+---
+title: "Visualizations in R using the tidyverse"
+subtitle: "Sigma Xi Fall Workshop, 2023"
+author: "P. Lombardo & J. Kaufman"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+---
+
+```{r set-up, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(gapminder)
+library(patchwork)
+```
+
+
+# Case Study 1: Incrementally building plots.
+```{r}
+ggplot(data = iris,
+       aes(x = Petal.Width,
+           y = Sepal.Width))+
+    geom_point(aes(color=Species),
+               alpha=.7)+
+    scale_color_brewer("Species\nof Iris",palette="Set2")+
+    scale_x_continuous(limits=c(0,3),
+                       breaks=seq(0,3,by=.5))+
+    scale_y_continuous(limits=c(0,5))+
+    # geom_smooth(method = "lm", se = F)+
+    geom_smooth(aes(color=Species), method = "lm", se = F)+
+    labs(x="Petal Width (in)",
+         y="Sepal Width (in)",
+         title="Comparing Sepal and Petal Width among three species of Iris")+
+    theme_bw()
+```
+
+
+# Case Study 2: Other plots, and `patchwork`-ing them together
+Dropping the diamond data set in favor of spotify?
+
+```{r}
+df2<-read.csv('data/spotify-2023.csv',header=T)
+df2 %>% names()
+
+df2<-df2 %>% select(track_name,artist.s._name,released_year,
+                    in_apple_charts,
+                    danceability_., mode,streams)
+```
+
+[Patchwork example?](https://patchwork.data-imaginist.com/articles/guides/layout.html)
+```{r}
+p0<-df2 %>%
+    ggplot(data = .,
+           aes(x=danceability_.))+
+    geom_histogram(bins=10,
+                   aes(fill=mode),alpha=.6,
+                   position=position_dodge(width=3))+
+    scale_fill_brewer(palette="Set1",guide="none")+
+    labs(color="Key Signature Mode",
+         y="Counts",
+         x="Danceability Score")+
+    theme_bw()
+```
+
+```{r}
+p1<-df2 %>%
+    arrange(desc(streams)) %>%
+    mutate(aboveMedian = ifelse(streams > median(streams),"Yes","No")) %>%
+    ggplot(data =.,
+           aes(x = aboveMedian,
+               y=danceability_.))+
+    geom_violin(fill='gray',alpha=.6)+
+    geom_point(aes(color=mode),
+               alpha=.4,
+               position = position_jitter(width=.25))+
+    scale_color_brewer(palette="Set1")+
+    labs(color="Key Signature Mode",
+         y="Danceability Score",
+         x="Above Median Stream Counts")+
+    theme_bw()+
+    theme(legend.position="top")
+    
+```
+
+```{r}
+p2<-df2 %>%
+    mutate(aboveMedian = ifelse(streams > median(streams),"Yes","No")) %>%
+    ggplot(data =.,
+           aes(x=mode,
+               fill = mode))+
+    geom_bar(aes(y=after_stat(count)/sum(after_stat(count))),
+             alpha=.75)+
+    scale_fill_brewer("Key Signature\nMode",palette="Set1",guide="none")+
+    labs(x="Key Signature Mode",
+         y="Percentage")+
+    theme_bw()
+```
+
+```{r}
+layout <- "
+AAAA##
+BBBBCC
+BBBBCC
+"
+p0+p1+p2 +plot_layout(design=layout)
+```
+
+
+# Case Study 3: Summarizing and plotting
+Time series with other criteria, look at averages by timestamp
+Gapminder, look at time trends grouping by continent
+```{r}
+gapminder %>%
+    group_by(continent,year) %>%
+    summarise(meanPop = mean(pop),
+              meanLife = mean(lifeExp),
+              sdLife = sd(lifeExp),
+              lowLife = meanLife -sdLife,
+              highLife = meanLife + sdLife) %>%
+    ggplot(data = .,
+           aes(x=year,
+               y = meanLife,
+               color=continent,
+               group=continent))+
+    geom_point(aes(size = meanPop))+geom_line()+
+    scale_color_brewer("Species\nof Iris",palette="Set2")+
+    geom_errorbar(aes(ymin=lowLife,ymax=highLife),
+                  alpha=.3,width=1)+
+    scale_x_continuous(breaks=seq(1950,2010,by=5))+
+    geom_hline(yintercept=seq(40,80,by=10),
+               col='gray',alpha=.3)+
+    theme_classic()
+```
+
+
+# Case Study 4: Non-tidy data
+Coming soon...
+
