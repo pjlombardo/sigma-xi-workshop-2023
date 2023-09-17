@@ -12,6 +12,7 @@ output:
 library(tidyverse)
 library(gapminder)
 library(patchwork)
+library(RColorBrewer)
 ```
 
 
@@ -40,7 +41,7 @@ Dropping the diamond data set in favor of spotify?
 
 ```{r}
 df2<-read.csv('data/spotify-2023.csv',header=T)
-df2 %>% names()
+# df2 %>% names()
 
 df2<-df2 %>% select(track_name,artist.s._name,released_year,
                     in_apple_charts,
@@ -48,8 +49,10 @@ df2<-df2 %>% select(track_name,artist.s._name,released_year,
 ```
 
 [Patchwork example?](https://patchwork.data-imaginist.com/articles/guides/layout.html)
+
+**Plot 1: Histogram Example**:
 ```{r}
-p0<-df2 %>%
+p1<-df2 %>%
     ggplot(data = .,
            aes(x=danceability_.))+
     geom_histogram(bins=10,
@@ -62,8 +65,9 @@ p0<-df2 %>%
     theme_bw()
 ```
 
+**Plot 2: Fancy Violin Plot Example**:
 ```{r}
-p1<-df2 %>%
+p2<-df2 %>%
     arrange(desc(streams)) %>%
     mutate(aboveMedian = ifelse(streams > median(streams),"Yes","No")) %>%
     ggplot(data =.,
@@ -82,8 +86,9 @@ p1<-df2 %>%
     
 ```
 
+**Plot 3: Bar Plot Example**:
 ```{r}
-p2<-df2 %>%
+p3<-df2 %>%
     mutate(aboveMedian = ifelse(streams > median(streams),"Yes","No")) %>%
     ggplot(data =.,
            aes(x=mode,
@@ -96,19 +101,26 @@ p2<-df2 %>%
     theme_bw()
 ```
 
+Simple patchwork options:
+```{r}
+(p1+p2)/p3
+```
+
+More advanced layouts:
 ```{r}
 layout <- "
 AAAA##
 BBBBCC
 BBBBCC
 "
-p0+p1+p2 +plot_layout(design=layout)
+p1+p2+p3 +plot_layout(design=layout)
 ```
 
 
 # Case Study 3: Summarizing and plotting
-Time series with other criteria, look at averages by timestamp
-Gapminder, look at time trends grouping by continent
+The gapminder data set looks at metrics like life expectancy and national GDP for several nations around the world over time. 
+
+Let's make a plot consider trends in life expectancy over time by continent.
 ```{r, warning=FALSE, message=FALSE}
 gapminder %>%
     group_by(continent,year) %>%
@@ -136,9 +148,58 @@ gapminder %>%
                col='gray',alpha=.3)+
     theme_classic()
 ```
+(*Note:* A bit noisy for my taste....)
 
 
 # Case Study 4: Non-tidy data
-Coming soon...
-Any thoughts?
+
+```{r}
+# From five-thirty-eight
+# https://github.com/fivethirtyeight/data/tree/master/drug-use-by-age
+df4<-read.csv('data/drug-use-by-age.csv',header=T,
+              na.strings = "-")
+# # df4 %>% names()
+# df4 %>% str()
+```
+
+Columns display same measurements (use as percentage used in 12-month period, frequency as a median number of times in 12-month period) but categories are split among columns.
+
+One tidy format would have `use` and `frequency` as their own columns, with `drug_type` as indicating the type of drug.
+
+```{r}
+df4_final<-df4 %>% pivot_longer(
+    col = -c(age,n),
+    names_pattern = "(.*)_(.*)",
+    names_to = c("drug_type","measure_type")
+) %>% 
+    pivot_wider(
+        names_from=measure_type,
+        values_from = value
+    )
+
+# df4_final$drug_type %>% unique()
+# ?pivot_longer
+# ?pivot_wider
+```
+
+```{r}
+display.brewer.all()
+```
+
+```{r}
+df4_final %>%
+    # filter(drug_type %in% c("alcohol","marijuana","meth")) %>%
+    ggplot(data =.,
+           aes(x = age,
+               y=drug_type,
+               fill=use))+
+    geom_tile()+
+    scale_fill_gradientn("Percentage of\nAge GroupUsing\nin the past year",colors = brewer.pal(9,name="YlOrRd"))+
+    theme_dark()+
+    theme(axis.text.x = element_text(angle = 60, hjust=1))+
+    labs(x="Age Group",
+         y="Drug Type",
+         title="Drug use percentages by type")
+```
+
 
