@@ -194,7 +194,7 @@ df4_final %>%
                y=drug_type,
                fill=use))+
     geom_tile()+
-    scale_fill_gradientn("Percentage of\nAge GroupUsing\nin the past year",colors = brewer.pal(9,name="YlOrRd"))+
+    scale_fill_gradientn("Percentage of\nAge Group Using\nin the past year",colors = brewer.pal(9,name="YlOrRd"))+
     theme_dark()+
     theme(axis.text.x = element_text(angle = 60, hjust=1))+
     labs(x="Age Group",
