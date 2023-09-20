@@ -1,0 +1,135 @@
+---
+title: "Visualizations in R using the tidyverse"
+subtitle: "Sigma Xi Fall Workshop, 2023"
+author: "P. Lombardo & J. Kaufman"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+---
+
+Begin by loading the necessary packages and necessary data sets.
+```{r set-up, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(gapminder)
+library(patchwork)
+library(RColorBrewer)
+
+# Courtesy of Kaggle
+spotify<-read.csv('data/spotify-2023.csv',header=T)
+    # Select only certain variables
+spotify<-spotify %>%
+    select(track_name,artist.s._name,
+           released_year,
+           in_apple_charts,
+           danceability_., 
+           mode, streams)
+
+# Courtesy of five-thirty-eight
+drugUse<-read.csv('data/drug-use-by-age.csv',
+                  header=T,
+                  na.strings = "-")
+```
+
+
+# Workshop Examples
+
+## Case Study 1: Incrementally building plots with the `iris` data set.
+```{r}
+head(iris)
+```
+
+
+## Case Study 2: Using `spotify` data to explore plot options and `patchwork` them together
+
+```{r}
+head(spotify) %>% as_tibble()
+```
+
+
+**Plot 1: Histogram Example**.
+```{r}
+# Let's build a histogram together
+# p1
+```
+
+**Plot 2: Fancy Violin Plot Example**.
+```{r}
+# What's a violin plot?
+# p2
+```
+
+**Plot 3: Bar Plot Example**.
+```{r}
+# how about a simple bar plot...
+# p3
+```
+
+Simple patchwork options:
+```{r}
+# (p1+p2)/p3
+```
+
+More advanced layouts:
+```{r}
+layout <- "
+AAAA##
+BBBBCC
+BBBBCC
+"
+# p1+p2+p3 +plot_layout(design=layout)
+```
+
+
+## Case Study 3: Plotting summary data with the `gapminder` data set
+
+The gapminder data set looks at metrics like life expectancy and national GDP for several nations around the world over time. 
+
+Let's make a plot consider trends in life expectancy over time by continent.
+```{r, warning=FALSE, message=FALSE}
+head(gapminder)
+```
+
+
+## Case Study 4: Reshaping and plotting with the `drugUse` data set.
+
+```{r}
+head(drugUse)
+```
+
+Columns display the same measurements (`use` as percentage of the age group that used in the 12-month period, and `frequency` as the median number of times an individual used in the 12-month period), but categories are split among columns.
+
+One tidy format would have `use` and `frequency` as their own columns, with `drug_type` as indicating the type of drug.
+
+```{r}
+?pivot_longer
+?pivot_wider
+```
+
+```{r}
+# display.brewer.all()
+```
+
+```{r}
+# Let's create a heatmap
+```
+
+# Helpful Resources:
+
+## Data Repositories
+
+* [Kaggle data sets](https://www.kaggle.com/datasets)
+    * [Spotify songs 2023 (Kaggle)](https://www.kaggle.com/datasets/nelgiriyewithana/top-spotify-songs-2023)
+* [five-thirty-eight data (github)](https://github.com/fivethirtyeight/data)
+    * [druge-use data set](https://github.com/fivethirtyeight/data/tree/master/drug-use-by-age)
+
+## Package documentation
+
+* [`tidyverse` documentation](https://www.tidyverse.org/)
+    * [`ggplot` documentation](https://ggplot2.tidyverse.org/)
+    * [`dplyr` documentation](https://dplyr.tidyverse.org/)
+* [`patchwork` documentation](https://patchwork.data-imaginist.com/)
+* [`gapminder` R package documentation](https://cran.r-project.org/web/packages/gapminder/index.html)
+    * [Gapminder organization](https://www.gapminder.org/)
+
+
